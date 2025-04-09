@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Shade Changer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            background-color: rgb(0, 0, 0);
+            overflow: hidden;
+            transition: background-color 0.6s ease-in-out;
+        }
+
+        .footer {
+            background-color: #333;
+            padding: 20px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer p {
+            margin: 5px 0;
+            font-size: 18px;
+            letter-spacing: 1px;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+
+        .footer p:hover {
+            transform: scale(1.05);
+        }
+
+        .slider-container {
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .footer input[type="range"] {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #444;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .footer input[type="range"]:focus {
+            outline: none;
+        }
+
+        .input-container {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .input-container input {
+            width: 60px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="footer">
+        <p id="footer-color-name">Color Name: </p>
+        <p id="footer-color-value">Color Value: rgb(0, 0, 0)</p>
+
+        <div class="slider-container">
+            <input id="r" type="range" min="0" max="255" value="0" onchange="updateColor()">
+        </div>
+        <div class="slider-container">
+            <input id="g" type="range" min="0" max="255" value="0" onchange="updateColor()">
+        </div>
+        <div class="slider-container">
+            <input id="b" type="range" min="0" max="255" value="0" onchange="updateColor()">
+        </div>
+
+        <div class="input-container">
+            <input id="r-input" type="number" min="0" max="255" value="0" onchange="updateColorFromInput()">
+            <input id="g-input" type="number" min="0" max="255" value="0" onchange="updateColorFromInput()">
+            <input id="b-input" type="number" min="0" max="255" value="0" onchange="updateColorFromInput()">
+        </div>
+    </div>
+
+    <script>
+        // Функция для обновления цвета фона через ползунки
+        function updateColor() {
+            // Получаем значения RGB из ползунков
+            const r = parseInt(document.getElementById("r").value) || 0;
+            const g = parseInt(document.getElementById("g").value) || 0;
+            const b = parseInt(document.getElementById("b").value) || 0;
+
+            const color = `rgb(${r}, ${g}, ${b})`;
+
+            // Обновляем фон страницы с анимацией
+            document.body.style.backgroundColor = color;
+
+            // Обновляем отображаемые значения RGB
+            document.getElementById("footer-color-value").innerText = `Color Value: ${color}`;
+
+            // Получаем название цвета через API
+            getColorName(color);
+
+            // Обновляем поля для ручного ввода
+            document.getElementById("r-input").value = r;
+            document.getElementById("g-input").value = g;
+            document.getElementById("b-input").value = b;
+        }
+
+        // Функция для получения названия цвета с использованием API
+        async function getColorName(color) {
+            const rgb = color;
+            const response = await fetch(`https://www.thecolorapi.com/id?rgb=${rgb}`);
+            const data = await response.json();
+
+            if (data.name) {
+                document.getElementById("footer-color-name").innerText = `Color Name: ${data.name.value}`;
+            } else {
+                document.getElementById("footer-color-name").innerText = `Color Name: Unknown`;
+            }
+        }
+
+        // Функция для обновления цвета через ввод с клавиатуры
+        function updateColorFromInput() {
+            const r = parseInt(document.getElementById("r-input").value) || 0;
+            const g = parseInt(document.getElementById("g-input").value) || 0;
+            const b = parseInt(document.getElementById("b-input").value) || 0;
+            const color = `rgb(${r}, ${g}, ${b})`;
+
+            // Обновляем ползунки с учетом введенных значений
+            document.getElementById("r").value = r;
+            document.getElementById("g").value = g;
+            document.getElementById("b").value = b;
+
+            // Обновляем цвет фона и отображаемые значения
+            updateColor();
+        }
+
+        // Функция для копирования цвета в буфер обмена
+        function copyColorToClipboard(color) {
+            navigator.clipboard.writeText(color).then(() => {
+                alert('Color copied to clipboard: ' + color);
+            }).catch(err => {
+                console.error('Failed to copy color: ', err);
+            });
+        }
+
+        // Слушаем клик по экрану и сохраняем цвет
+        document.body.addEventListener('click', () => {
+            const color = document.body.style.backgroundColor;
+            copyColorToClipboard(color);
+        });
+
+        // Инициализация с начальным цветом
+        updateColor();
+    </script>
+</body>
+</html>
